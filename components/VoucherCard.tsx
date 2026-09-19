@@ -27,26 +27,47 @@ export function VoucherCard({ voucher, onUpdate, onDelete }: VoucherCardProps) {
   });
 
   const handleCopyAndRedirect = async () => {
+    // 1. Fallback copy an toàn cho các thiết bị đời cũ (như iPhone 6s)
     try {
-      await navigator.clipboard.writeText(voucher.code);
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(voucher.code);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = voucher.code;
+        textArea.style.position = "absolute";
+        textArea.style.left = "-999999px";
+        document.body.prepend(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+      }
       toast.success(`Đã copy mã ${voucher.code}!`, {
         description: "Đang chuyển đến ví Voucher Shopee...",
       });
-
-      // Deep link to Shopee app voucher wallet
-      setTimeout(() => {
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        if (isMobile) {
-          window.location.href = "https://shopee.vn/user/voucher-wallet";
-        } else {
-          window.open("https://shopee.vn/user/voucher-wallet", "_blank");
-        }
-      }, 800);
     } catch (err) {
-      toast.error("Lỗi", {
-        description: "Không thể copy mã. Vui lòng thử lại.",
+      // Vẫn thông báo thành công để không làm gián đoạn luồng chuyển trang
+      toast.success(`Mã: ${voucher.code}`, {
+        description: "Đang mở Shopee...",
       });
     }
+
+    // 2. Chuyển hướng an toàn, tối ưu riêng cho Android và iOS
+    setTimeout(() => {
+      const ua = navigator.userAgent;
+      const isAndroid = /Android/i.test(ua);
+      const isIOS = /iPhone|iPad|iPod/i.test(ua);
+      
+      if (isAndroid) {
+        // Cú pháp Intent độc quyền của Android giúp bắt buộc mở App Shopee
+        window.location.href = "intent://shopee.vn/user/voucher-wallet#Intent;scheme=https;package=com.shopee.vn;S.browser_fallback_url=https://shopee.vn/user/voucher-wallet;end";
+      } else if (isIOS) {
+        // Universal Link iOS
+        window.location.href = "https://shopee.vn/user/voucher-wallet";
+      } else {
+        // Máy tính
+        window.open("https://shopee.vn/user/voucher-wallet", "_blank");
+      }
+    }, 400); // Giảm timeout xuống 400ms để trình duyệt không chặn popup
   };
 
   const handleSave = () => {
