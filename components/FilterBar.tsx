@@ -1,7 +1,6 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Search } from "lucide-react";
 import { VOUCHER_TAGS } from "@/data/mockVouchers";
 
@@ -21,8 +20,9 @@ export function FilterBar({
   return (
     <div className="flex flex-col gap-4 mb-6">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
         <Input
+          aria-label="Tìm kiếm mã giảm giá"
           placeholder="Tìm kiếm mã hoặc mô tả voucher..."
           className="pl-9 h-11 bg-white dark:bg-gray-900 shadow-sm"
           value={searchQuery}
@@ -30,16 +30,21 @@ export function FilterBar({
         />
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Lọc voucher theo loại">
         {VOUCHER_TAGS.map((tag) => (
-          <Badge
+          <button
+            type="button"
             key={tag}
-            variant={selectedTag === tag ? "default" : "secondary"}
-            className="cursor-pointer text-sm px-4 py-1.5 transition-colors"
+            aria-pressed={selectedTag === tag}
+            className={
+              selectedTag === tag
+                ? "inline-flex min-h-12 items-center rounded-lg border border-transparent bg-primary px-4 text-sm font-medium text-primary-foreground active:opacity-80"
+                : "inline-flex min-h-12 items-center rounded-lg border border-transparent bg-secondary px-4 text-sm font-medium text-secondary-foreground active:bg-muted"
+            }
             onClick={() => setSelectedTag(tag)}
           >
             {tag}
-          </Badge>
+          </button>
         ))}
       </div>
     </div>

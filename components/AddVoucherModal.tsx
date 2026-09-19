@@ -48,6 +48,18 @@ interface AddVoucherModalProps {
   onAdd: (voucher: VoucherItem) => void;
 }
 
+function createVoucher(values: z.infer<typeof formSchema>): VoucherItem {
+  const timestamp = Date.now();
+
+  return {
+    id: `${timestamp.toString(36)}-${Math.random().toString(36).slice(2, 9)}`,
+    code: values.code,
+    detail: values.detail,
+    tag: values.tag as VoucherTag,
+    updatedAt: timestamp,
+  };
+}
+
 export function AddVoucherModal({ onAdd }: AddVoucherModalProps) {
   const [open, setOpen] = useState(false);
 
@@ -61,13 +73,7 @@ export function AddVoucherModal({ onAdd }: AddVoucherModalProps) {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const newVoucher: VoucherItem = {
-      id: Math.random().toString(36).substring(7),
-      code: values.code,
-      detail: values.detail,
-      tag: values.tag as VoucherTag,
-      updatedAt: Date.now(),
-    };
+    const newVoucher = createVoucher(values);
     onAdd(newVoucher);
     toast.success("Thêm thành công!", {
       description: `Voucher ${values.code} đã được thêm.`,
@@ -82,10 +88,12 @@ export function AddVoucherModal({ onAdd }: AddVoucherModalProps) {
         render={
           <button
             type="button"
-            className="rounded-full shadow-2xl fixed z-50 inline-flex items-center justify-center text-white font-semibold active:opacity-80"
-            style={{ backgroundColor: 'var(--primary, #ee4d2d)', width: '56px', height: '56px', minWidth: '56px', minHeight: '56px', bottom: '24px', right: '16px', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation', border: 'none', padding: 0 }}
+            aria-label="Thêm mã giảm giá"
+            title="Thêm mã giảm giá"
+            className="floating-add-button rounded-full shadow-2xl fixed z-50 inline-flex items-center justify-center text-white font-semibold active:opacity-80"
+            style={{ backgroundColor: "var(--primary, #ee4d2d)", width: "56px", height: "56px", minWidth: "56px", minHeight: "56px", WebkitTapHighlightColor: "transparent", touchAction: "manipulation", border: "none", padding: 0 }}
           >
-            <Plus className="w-6 h-6" />
+            <Plus className="w-6 h-6" aria-hidden="true" />
           </button>
         }
       />

@@ -201,40 +201,124 @@
   }
   html {
     @apply font-sans;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
-  /* ===== OLD DEVICE COMPATIBILITY FIXES ===== */
-
-  /* Ensure all buttons and clickable elements have proper touch targets (>= 44px) */
   button,
   [role="button"],
-  a,
-  input,
-  select,
-  textarea {
-    -webkit-tap-highlight-color: transparent;
+  a[href] {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
     touch-action: manipulation;
+  }
+
+  button,
+  [role="button"],
+  .touch-target {
     min-height: 44px;
     min-width: 44px;
   }
 
-  /* Exception: icon-only buttons can be smaller but still need 44px touch area */
-  button[data-slot="button"] {
-    position: relative;
+  input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+  select {
+    min-height: 44px;
   }
 
-  /* Fix backdrop-filter not working on old Safari */
-  .backdrop-blur-sm {
-    -webkit-backdrop-filter: blur(4px);
+  @media (pointer: coarse) {
+    button,
+    [role="button"],
+    .touch-target,
+    input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+    select {
+      min-height: 48px;
+    }
+
+    button,
+    [role="button"],
+    .touch-target {
+      min-width: 48px;
+    }
   }
 
-  /* Flexbox gap fallback for old Safari (<14.1) */
-  @supports not (gap: 1px) {
-    .gap-1 > * + * { margin-left: 0.25rem; }
-    .gap-2 > * + * { margin-left: 0.5rem; }
-    .gap-4 > * + * { margin-left: 1rem; }
-    .flex-col.gap-1 > * + * { margin-left: 0; margin-top: 0.25rem; }
-    .flex-col.gap-2 > * + * { margin-left: 0; margin-top: 0.5rem; }
-    .flex-col.gap-4 > * + * { margin-left: 0; margin-top: 1rem; }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      scroll-behavior: auto !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
+
+  .no-flex-gap .flex:not(.flex-col):not(.flex-wrap).gap-1 > * + * {
+    margin-left: 0.25rem;
+  }
+
+  .no-flex-gap .flex:not(.flex-col):not(.flex-wrap).gap-1\.5 > * + * {
+    margin-left: 0.375rem;
+  }
+
+  .no-flex-gap .flex:not(.flex-col):not(.flex-wrap).gap-2 > * + * {
+    margin-left: 0.5rem;
+  }
+
+  .no-flex-gap .flex:not(.flex-col):not(.flex-wrap).gap-3 > * + * {
+    margin-left: 0.75rem;
+  }
+
+  .no-flex-gap .flex:not(.flex-col):not(.flex-wrap).gap-4 > * + * {
+    margin-left: 1rem;
+  }
+
+  .no-flex-gap .flex.flex-col.gap-1 > * + * {
+    margin-top: 0.25rem;
+  }
+
+  .no-flex-gap .flex.flex-col.gap-1\.5 > * + * {
+    margin-top: 0.375rem;
+  }
+
+  .no-flex-gap .flex.flex-col.gap-2 > * + * {
+    margin-top: 0.5rem;
+  }
+
+  .no-flex-gap .flex.flex-col.gap-3 > * + * {
+    margin-top: 0.75rem;
+  }
+
+  .no-flex-gap .flex.flex-col.gap-4 > * + * {
+    margin-top: 1rem;
+  }
+
+  .no-flex-gap .flex.flex-wrap.gap-2 {
+    margin-top: -0.5rem;
+    margin-left: -0.5rem;
+  }
+
+  .no-flex-gap .flex.flex-wrap.gap-2 > * {
+    margin-top: 0.5rem;
+    margin-left: 0.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .no-flex-gap .flex.sm\:flex-row.gap-4 > * + * {
+      margin-top: 0;
+      margin-left: 1rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .no-flex-gap .flex.md\:flex-row.gap-4 > * + * {
+      margin-top: 0;
+      margin-left: 1rem;
+    }
+  }
+}
+
+.floating-add-button {
+  right: 16px;
+  bottom: 24px;
+  right: calc(16px + env(safe-area-inset-right));
+  bottom: calc(16px + env(safe-area-inset-bottom));
 }
