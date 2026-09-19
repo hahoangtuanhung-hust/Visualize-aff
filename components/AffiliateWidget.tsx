@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ExternalLink, Edit2, Check, X, Store } from "lucide-react";
+import { ExternalLink, Edit2, Check, X, Store, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 import {
   AffiliateConfig,
@@ -23,6 +23,7 @@ interface AffiliatePersonBoxProps {
   onEdit: (person: PersonKey) => void;
   onCancel: () => void;
   onSave: (person: PersonKey) => void;
+  isSaving: boolean;
 }
 
 function AffiliatePersonBox({
@@ -34,6 +35,7 @@ function AffiliatePersonBox({
   onEdit,
   onCancel,
   onSave,
+  isSaving,
 }: AffiliatePersonBoxProps) {
   const isEditing = editPerson === personKey;
   const data = config[personKey];
@@ -49,12 +51,18 @@ function AffiliatePersonBox({
           placeholder="Nhập link Shopee affiliate..."
           className="h-11 text-base md:text-sm"
           autoFocus
+          disabled={isSaving}
         />
         <div className="flex gap-2">
-          <Button size="sm" onClick={() => onSave(personKey)} className="flex-1">
-            <Check className="w-4 h-4 mr-1" aria-hidden="true" /> Lưu
+          <Button size="sm" onClick={() => onSave(personKey)} className="flex-1" disabled={isSaving} aria-busy={isSaving}>
+            {isSaving ? (
+              <LoaderCircle className="w-4 h-4 mr-1 animate-spin" aria-hidden="true" />
+            ) : (
+              <Check className="w-4 h-4 mr-1" aria-hidden="true" />
+            )}
+            {isSaving ? "Đang lưu..." : "Lưu"}
           </Button>
-          <Button size="sm" variant="outline" onClick={onCancel} className="flex-1">
+          <Button size="sm" variant="outline" onClick={onCancel} className="flex-1" disabled={isSaving}>
             <X className="w-4 h-4 mr-1" aria-hidden="true" /> Hủy
           </Button>
         </div>
@@ -88,6 +96,7 @@ function AffiliatePersonBox({
         className="inline-flex items-center justify-center rounded-lg bg-white border shadow-sm text-gray-500 active:bg-gray-100"
         style={{ width: "48px", height: "48px", minWidth: "48px", minHeight: "48px", padding: 0 }}
         onClick={() => onEdit(personKey)}
+        disabled={isSaving}
       >
         <Edit2 className="w-4 h-4" aria-hidden="true" />
       </button>
@@ -125,6 +134,7 @@ export function AffiliateWidget() {
 
   const [editPerson, setEditPerson] = useState<PersonKey | null>(null);
   const [tempUrl, setTempUrl] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleEdit = (person: PersonKey) => {
     setEditPerson(person);
@@ -148,20 +158,17 @@ export function AffiliateWidget() {
       ...config,
       [person]: { ...config[person], url: parsedUrl.toString() },
     } satisfies AffiliateConfig;
-    const previousConfig = config;
-
-    // Cập nhật giao diện ngay lập tức (Optimistic Update)
-    setConfig(newConfig);
-    setEditPerson(null);
-
-    // Lưu vào Firebase
+    setIsSaving(true);
     try {
       await saveAffiliateConfig(newConfig);
+      setConfig(newConfig);
+      setEditPerson(null);
       toast.success("Đã đồng bộ link lên Firebase!");
     } catch (error) {
-      setConfig(previousConfig);
       console.error(error);
-      toast.error("Chưa thể đồng bộ lên máy chủ, vui lòng kiểm tra quyền Firebase.");
+      toast.error("Chưa thể lưu link lên Firebase. Link vẫn được giữ để bạn thử lại.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -187,6 +194,7 @@ export function AffiliateWidget() {
           onEdit={handleEdit}
           onCancel={() => setEditPerson(null)}
           onSave={(person) => void handleSave(person)}
+          isSaving={isSaving}
         />
         <AffiliatePersonBox
           personKey="person2"
@@ -197,6 +205,7 @@ export function AffiliateWidget() {
           onEdit={handleEdit}
           onCancel={() => setEditPerson(null)}
           onSave={(person) => void handleSave(person)}
+          isSaving={isSaving}
         />
       </div>
     </div>

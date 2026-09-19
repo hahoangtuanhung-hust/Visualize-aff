@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Plus } from "lucide-react";
+import { LoaderCircle, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -45,7 +45,7 @@ const formSchema = z.object({
 });
 
 interface AddVoucherModalProps {
-  onAdd: (voucher: VoucherItem) => void;
+  onAdd: (voucher: VoucherItem) => Promise<void>;
 }
 
 function createVoucher(values: z.infer<typeof formSchema>): VoucherItem {
@@ -62,6 +62,11 @@ function createVoucher(values: z.infer<typeof formSchema>): VoucherItem {
 
 export function AddVoucherModal({ onAdd }: AddVoucherModalProps) {
   const [open, setOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!isSaving) setOpen(nextOpen);
+  };
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -72,18 +77,27 @@ export function AddVoucherModal({ onAdd }: AddVoucherModalProps) {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     const newVoucher = createVoucher(values);
-    onAdd(newVoucher);
-    toast.success("Thêm thành công!", {
-      description: `Voucher ${values.code} đã được thêm.`,
-    });
-    setOpen(false);
-    form.reset();
+
+    setIsSaving(true);
+    try {
+      await onAdd(newVoucher);
+      toast.success("Đã lưu lên Firebase!", {
+        description: `Voucher ${values.code} đã được thêm.`,
+      });
+      setOpen(false);
+      form.reset();
+    } catch (error) {
+      console.error(error);
+      toast.error("Chưa thể lưu voucher lên Firebase. Dữ liệu vẫn được giữ để bạn thử lại.");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger
         render={
           <button
@@ -167,10 +181,13 @@ export function AddVoucherModal({ onAdd }: AddVoucherModalProps) {
             />
 
             <div className="pt-4 flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSaving}>
                 Hủy
               </Button>
-              <Button type="submit">Thêm mã</Button>
+              <Button type="submit" disabled={isSaving} aria-busy={isSaving}>
+                {isSaving && <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />}
+                {isSaving ? "Đang lưu..." : "Thêm mã"}
+              </Button>
             </div>
           </form>
         </Form>

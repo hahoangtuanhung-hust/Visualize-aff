@@ -1,3 +1,5 @@
+import { firestoreUrl, throwFirestoreError } from "@/lib/firebase";
+
 export interface AffiliateConfig {
   person1: { name: string; url: string };
   person2: { name: string; url: string };
@@ -7,9 +9,6 @@ export const DEFAULT_AFFILIATE_CONFIG: AffiliateConfig = {
   person1: { name: "Admin", url: "https://shopee.vn" },
   person2: { name: "Cộng đồng", url: "https://shopee.vn" },
 };
-
-const FIRESTORE_DOCUMENT_URL =
-  "https://firestore.googleapis.com/v1/projects/shopee-voucher-hub/databases/(default)/documents/config/affiliate?key=AIzaSyC7AKyzHUNDuLjRFPp8ZGceVRzcDLZ-HlE";
 
 interface FirestoreStringValue {
   stringValue?: string;
@@ -55,7 +54,7 @@ function readPerson(
 }
 
 export async function getAffiliateConfig() {
-  const response = await fetch(FIRESTORE_DOCUMENT_URL, {
+  const response = await fetch(firestoreUrl("config/affiliate"), {
     method: "GET",
     cache: "no-store",
   });
@@ -65,7 +64,7 @@ export async function getAffiliateConfig() {
   }
 
   if (!response.ok) {
-    throw new Error(`Firestore read failed with status ${response.status}`);
+    await throwFirestoreError(response, "Không thể tải link affiliate từ Firebase");
   }
 
   const document = (await response.json()) as FirestoreAffiliateDocument;
@@ -77,7 +76,7 @@ export async function getAffiliateConfig() {
 }
 
 export async function saveAffiliateConfig(config: AffiliateConfig) {
-  const response = await fetch(FIRESTORE_DOCUMENT_URL, {
+  const response = await fetch(firestoreUrl("config/affiliate"), {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -105,6 +104,6 @@ export async function saveAffiliateConfig(config: AffiliateConfig) {
   });
 
   if (!response.ok) {
-    throw new Error(`Firestore write failed with status ${response.status}`);
+    await throwFirestoreError(response, "Không thể lưu link affiliate lên Firebase");
   }
 }

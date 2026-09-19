@@ -7,15 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Edit2, Check, X, Tag as TagIcon, Trash2 } from "lucide-react";
+import { Copy, Edit2, Check, X, Tag as TagIcon, Trash2, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 
 interface VoucherCardProps {
   voucher: VoucherItem;
-  onUpdate: (id: string, updated: Partial<VoucherItem>) => void;
-  onDelete?: (id: string) => void;
+  onUpdate: (id: string, updated: Partial<VoucherItem>) => Promise<void>;
+  onDelete?: (id: string) => Promise<void>;
 }
 
 const SHOPEE_VOUCHER_URL = "https://shopee.vn/user/voucher-wallet";
@@ -46,6 +46,8 @@ function copyWithSelection(value: string) {
 
 export function VoucherCard({ voucher, onUpdate, onDelete }: VoucherCardProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [editForm, setEditForm] = useState({
     code: voucher.code,
     detail: voucher.detail,
@@ -81,17 +83,40 @@ export function VoucherCard({ voucher, onUpdate, onDelete }: VoucherCardProps) {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editForm.code || !editForm.detail) {
       toast.error("Vui lòng nhập đủ thông tin.");
       return;
     }
-    onUpdate(voucher.id, {
-      ...editForm,
-      updatedAt: Date.now(),
-    });
-    setIsEditing(false);
-    toast.success("Đã cập nhật mã giảm giá!");
+
+    setIsSaving(true);
+    try {
+      await onUpdate(voucher.id, {
+        ...editForm,
+        updatedAt: Date.now(),
+      });
+      setIsEditing(false);
+      toast.success("Đã cập nhật voucher trên Firebase!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Chưa thể cập nhật Firebase. Thay đổi vẫn được giữ để bạn thử lại.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!onDelete || !confirm("Bạn có chắc muốn xóa mã giảm giá này?")) return;
+
+    setIsDeleting(true);
+    try {
+      await onDelete(voucher.id);
+      toast.success(`Đã xóa voucher ${voucher.code}.`);
+    } catch (error) {
+      console.error(error);
+      toast.error("Chưa thể xóa voucher trên Firebase. Vui lòng thử lại.");
+      setIsDeleting(false);
+    }
   };
 
   if (isEditing) {
@@ -123,10 +148,15 @@ export function VoucherCard({ voucher, onUpdate, onDelete }: VoucherCardProps) {
           className="resize-none"
         />
         <div className="flex gap-2 pt-2">
-          <Button onClick={handleSave} className="flex-1 h-11">
-            <Check className="w-4 h-4 mr-1" aria-hidden="true" /> Lưu
+          <Button onClick={() => void handleSave()} className="flex-1 h-11" disabled={isSaving} aria-busy={isSaving}>
+            {isSaving ? (
+              <LoaderCircle className="w-4 h-4 mr-1 animate-spin" aria-hidden="true" />
+            ) : (
+              <Check className="w-4 h-4 mr-1" aria-hidden="true" />
+            )}
+            {isSaving ? "Đang lưu..." : "Lưu"}
           </Button>
-          <Button onClick={() => setIsEditing(false)} variant="outline" className="flex-1 h-11">
+          <Button onClick={() => setIsEditing(false)} variant="outline" className="flex-1 h-11" disabled={isSaving}>
             <X className="w-4 h-4 mr-1" aria-hidden="true" /> Hủy
           </Button>
         </div>
@@ -154,9 +184,15 @@ export function VoucherCard({ voucher, onUpdate, onDelete }: VoucherCardProps) {
             title="Xóa mã"
             className="inline-flex items-center justify-center rounded-md bg-white border border-gray-200 shadow-sm text-red-500 active:bg-red-50"
             style={{ width: "48px", height: "48px", minWidth: "48px", minHeight: "48px", padding: 0 }}
-            onClick={() => onDelete(voucher.id)}
+            onClick={() => void handleDelete()}
+            disabled={isDeleting}
+            aria-busy={isDeleting}
           >
-            <Trash2 className="w-4 h-4" aria-hidden="true" />
+            {isDeleting ? (
+              <LoaderCircle className="w-4 h-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <Trash2 className="w-4 h-4" aria-hidden="true" />
+            )}
           </button>
         )}
       </div>
