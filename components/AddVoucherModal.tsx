@@ -80,10 +80,13 @@ export function AddVoucherModal({ onAdd }: AddVoucherModalProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button className="rounded-full shadow-2xl h-14 w-14 md:h-12 md:w-auto md:rounded-full px-0 md:px-5 fixed bottom-6 right-4 md:bottom-8 md:right-8 z-50 transition-transform hover:scale-105 active:scale-95">
-            <Plus className="w-6 h-6 md:mr-2" />
-            <span className="hidden md:inline font-semibold text-base">Thêm Mã</span>
-          </Button>
+          <button
+            type="button"
+            className="rounded-full shadow-2xl fixed z-50 inline-flex items-center justify-center text-white font-semibold active:opacity-80"
+            style={{ backgroundColor: 'var(--primary, #ee4d2d)', width: '56px', height: '56px', minWidth: '56px', minHeight: '56px', bottom: '24px', right: '16px', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation', border: 'none', padding: 0 }}
+          >
+            <Plus className="w-6 h-6" />
+          </button>
         }
       />
       <DialogContent className="sm:max-w-[425px]">

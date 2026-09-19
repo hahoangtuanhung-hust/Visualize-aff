@@ -125,14 +125,24 @@ export function VoucherCard({ voucher, onUpdate, onDelete }: VoucherCardProps) {
 
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl p-5 shadow-sm hover:shadow-md transition-all relative group flex flex-col justify-between">
-      <div className="absolute right-2 top-2 md:opacity-0 opacity-100 group-hover:opacity-100 transition-opacity flex gap-1 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm p-1 rounded-lg border shadow-sm">
-        <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground" onClick={() => setIsEditing(true)}>
-          <Edit2 className="w-3.5 h-3.5" />
-        </Button>
+      <div className="absolute right-2 top-2 md:opacity-0 opacity-100 group-hover:opacity-100 transition-opacity flex p-1 rounded-lg" style={{ gap: '4px' }}>
+        <button
+          type="button"
+          className="inline-flex items-center justify-center rounded-md bg-white border border-gray-200 shadow-sm text-gray-500 active:bg-gray-100"
+          style={{ width: '36px', height: '36px', minWidth: '36px', minHeight: '36px', padding: 0 }}
+          onClick={() => setIsEditing(true)}
+        >
+          <Edit2 className="w-4 h-4" />
+        </button>
         {onDelete && (
-          <Button size="icon" variant="ghost" className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => onDelete(voucher.id)}>
-            <Trash2 className="w-3.5 h-3.5" />
-          </Button>
+          <button
+            type="button"
+            className="inline-flex items-center justify-center rounded-md bg-white border border-gray-200 shadow-sm text-red-500 active:bg-red-50"
+            style={{ width: '36px', height: '36px', minWidth: '36px', minHeight: '36px', padding: 0 }}
+            onClick={() => onDelete(voucher.id)}
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         )}
       </div>
 
@@ -160,13 +170,15 @@ export function VoucherCard({ voucher, onUpdate, onDelete }: VoucherCardProps) {
           Cập nhật {formatDistanceToNow(voucher.updatedAt, { locale: vi, addSuffix: true })}
         </div>
 
-        <Button 
-          className="w-full font-semibold group/btn" 
+        <button
+          type="button"
+          className="w-full font-semibold inline-flex items-center justify-center rounded-lg text-white text-sm active:opacity-80"
+          style={{ backgroundColor: 'var(--primary, #ee4d2d)', height: '48px', minHeight: '48px', padding: '0 16px', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
           onClick={handleCopyAndRedirect}
         >
-          <Copy className="w-4 h-4 mr-2 group-hover/btn:scale-110 transition-transform" />
+          <Copy className="w-4 h-4" style={{ marginRight: '8px' }} />
           Lưu mã
-        </Button>
+        </button>
       </div>
     </div>
   );

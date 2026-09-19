@@ -99,24 +99,33 @@ export function AffiliateWidget() {
     }
 
     return (
-      <div className="flex items-center gap-2 flex-1 w-full relative group">
-        <Button 
-          variant={personKey === "person1" ? "default" : "outline"} 
-          className="flex-1 justify-between shadow-sm h-10 w-full"
-          onClick={() => window.open(data.url, "_blank")}
+      <div className="flex items-center flex-1 w-full relative" style={{ gap: '8px' }}>
+        <button
+          type="button"
+          className="flex-1 inline-flex items-center justify-between rounded-lg text-sm font-medium shadow-sm"
+          style={{
+            height: '44px',
+            minHeight: '44px',
+            padding: '0 12px',
+            backgroundColor: personKey === 'person1' ? 'var(--primary, #ee4d2d)' : 'var(--background, #fff)',
+            color: personKey === 'person1' ? 'var(--primary-foreground, #fff)' : 'var(--foreground, #171717)',
+            border: personKey === 'person1' ? 'none' : '1px solid var(--border, #e5e5e5)',
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation',
+          }}
+          onClick={() => window.open(data.url, '_blank')}
         >
           Ủng hộ {data.name}
-          <ExternalLink className="ml-2 w-4 h-4" />
-        </Button>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="md:opacity-0 opacity-100 group-hover:opacity-100 absolute -right-2 -top-2 w-7 h-7 bg-white dark:bg-gray-800 shadow-sm border rounded-full text-muted-foreground transition-opacity"
+          <ExternalLink className="w-4 h-4" style={{ marginLeft: '8px' }} />
+        </button>
+        <button
+          type="button"
+          className="inline-flex items-center justify-center rounded-full bg-white border shadow-sm text-gray-500 active:bg-gray-100"
+          style={{ width: '32px', height: '32px', minWidth: '32px', minHeight: '32px', position: 'absolute', right: '-8px', top: '-8px', padding: 0, WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
           onClick={(e) => handleEdit(personKey, e)}
-          title="Sửa link"
         >
           <Edit2 className="w-3.5 h-3.5" />
-        </Button>
+        </button>
       </div>
     );
   };
