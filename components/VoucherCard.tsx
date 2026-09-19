@@ -19,8 +19,6 @@ interface VoucherCardProps {
 }
 
 const SHOPEE_VOUCHER_URL = "https://shopee.vn/user/voucher-wallet";
-const SHOPEE_ANDROID_INTENT =
-  "intent://shopee.vn/user/voucher-wallet#Intent;scheme=https;package=com.shopee.vn;S.browser_fallback_url=https%3A%2F%2Fshopee.vn%2Fuser%2Fvoucher-wallet;end";
 
 function copyWithSelection(value: string) {
   const textArea = document.createElement("textarea");
@@ -46,46 +44,6 @@ function copyWithSelection(value: string) {
   }
 }
 
-function openShopee() {
-  const userAgent = navigator.userAgent;
-  const isAndroid = /Android/i.test(userAgent);
-  const supportsAndroidIntent =
-    /Chrome\/\d+|SamsungBrowser\/\d+/i.test(userAgent) &&
-    !/; wv\)/i.test(userAgent);
-  const isIOS =
-    /iPhone|iPad|iPod/i.test(userAgent) ||
-    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-
-  if (isAndroid && supportsAndroidIntent) {
-    try {
-      window.location.assign(SHOPEE_ANDROID_INTENT);
-    } catch {
-      window.location.assign(SHOPEE_VOUCHER_URL);
-    }
-    return;
-  }
-
-  if (isAndroid) {
-    window.location.assign(SHOPEE_VOUCHER_URL);
-    return;
-  }
-
-  if (isIOS) {
-    window.location.assign(SHOPEE_VOUCHER_URL);
-    return;
-  }
-
-  const openedWindow = window.open(
-    SHOPEE_VOUCHER_URL,
-    "_blank",
-    "noopener,noreferrer"
-  );
-
-  if (!openedWindow) {
-    window.location.assign(SHOPEE_VOUCHER_URL);
-  }
-}
-
 export function VoucherCard({ voucher, onUpdate, onDelete }: VoucherCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -94,7 +52,7 @@ export function VoucherCard({ voucher, onUpdate, onDelete }: VoucherCardProps) {
     tag: voucher.tag,
   });
 
-  const handleCopyAndRedirect = () => {
+  const handleCopy = () => {
     let copied = false;
 
     try {
@@ -121,8 +79,6 @@ export function VoucherCard({ voucher, onUpdate, onDelete }: VoucherCardProps) {
         description: "Đang mở Shopee...",
       });
     }
-
-    openShopee();
   };
 
   const handleSave = () => {
@@ -229,15 +185,16 @@ export function VoucherCard({ voucher, onUpdate, onDelete }: VoucherCardProps) {
           Cập nhật {formatDistanceToNow(voucher.updatedAt, { locale: vi, addSuffix: true })}
         </div>
 
-        <button
-          type="button"
+        <a
+          href={SHOPEE_VOUCHER_URL}
+          aria-label={`Lưu mã ${voucher.code} và mở ứng dụng Shopee`}
           className="w-full font-semibold inline-flex items-center justify-center rounded-lg text-white text-sm active:opacity-80"
           style={{ backgroundColor: 'var(--primary, #ee4d2d)', height: '48px', minHeight: '48px', padding: '0 16px', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
-          onClick={handleCopyAndRedirect}
+          onClick={handleCopy}
         >
           <Copy className="w-4 h-4" style={{ marginRight: "8px" }} aria-hidden="true" />
           Lưu mã
-        </button>
+        </a>
       </div>
     </div>
   );
