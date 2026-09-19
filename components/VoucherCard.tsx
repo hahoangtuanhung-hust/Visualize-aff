@@ -37,7 +37,7 @@ export function VoucherCard({ voucher, onUpdate, onDelete }: VoucherCardProps) {
       setTimeout(() => {
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         if (isMobile) {
-          window.location.href = "shopeevn://";
+          window.location.href = "https://shopee.vn/user/voucher-wallet";
         } else {
           window.open("https://shopee.vn/user/voucher-wallet", "_blank");
         }
