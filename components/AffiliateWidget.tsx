@@ -4,7 +4,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ExternalLink, Edit2, Check, X, Store } from "lucide-react";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useEffect } from "react";
+import { db } from "@/lib/firebase";
+import { doc, onSnapshot, setDoc } from "firebase/firestore";
+import { toast } from "sonner";
 
 interface AffiliateConfig {
   person1: { name: string; url: string };
@@ -12,10 +15,33 @@ interface AffiliateConfig {
 }
 
 export function AffiliateWidget() {
-  const [config, setConfig] = useLocalStorage<AffiliateConfig>("affiliate_config", {
+  const [config, setConfig] = useState<AffiliateConfig>({
     person1: { name: "Admin", url: "https://shopee.vn" },
     person2: { name: "Cộng đồng", url: "https://shopee.vn" },
   });
+
+  useEffect(() => {
+    if (!db) return;
+    const docRef = doc(db, "config", "affiliate");
+    const unsubscribe = onSnapshot(
+      docRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          setConfig(docSnap.data() as AffiliateConfig);
+        } else {
+          // Initialize if empty
+          setDoc(docRef, {
+            person1: { name: "Admin", url: "https://shopee.vn" },
+            person2: { name: "Cộng đồng", url: "https://shopee.vn" },
+          }).catch(console.error);
+        }
+      },
+      (error) => {
+        console.error("Lỗi đồng bộ Firebase:", error);
+      }
+    );
+    return () => unsubscribe();
+  }, []);
 
   const [editPerson, setEditPerson] = useState<"person1" | "person2" | null>(null);
   const [tempUrl, setTempUrl] = useState("");
@@ -26,12 +52,24 @@ export function AffiliateWidget() {
     setTempUrl(config[person].url);
   };
 
-  const handleSave = (person: "person1" | "person2") => {
-    setConfig({
+  const handleSave = async (person: "person1" | "person2") => {
+    const newConfig = {
       ...config,
       [person]: { ...config[person], url: tempUrl },
-    });
+    };
+    
+    // Cập nhật giao diện ngay lập tức (Optimistic Update)
+    setConfig(newConfig);
     setEditPerson(null);
+    
+    // Lưu vào Firebase
+    try {
+      await setDoc(doc(db, "config", "affiliate"), newConfig, { merge: true });
+      toast.success("Đã đồng bộ link lên Firebase!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Chưa thể đồng bộ lên máy chủ, vui lòng kiểm tra quyền Firebase.");
+    }
   };
 
   const PersonBox = ({ personKey }: { personKey: "person1" | "person2" }) => {
